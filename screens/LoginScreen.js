@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, StyleSheet, TextInput, TouchableOpacity, Text, View } from 'react-native';
+import { KeyboardAvoidingView, StyleSheet, TextInput, TouchableOpacity, Text, View, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/core';
 import { auth, signInWithEmailAndPassword } from "../firebase";
 
@@ -13,20 +13,35 @@ const LoginScreen = () => {
       if (user) {
         navigation.replace('Home');
       }
-    })
+    });
     return unsubscribe;
   }, []);
 
   const handleLogin = () => {
     signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-            const user = userCredential.user;
-            console.log('User logged in successfully!', user);
-            navigation.navigate('Home');
-        })
-        .catch((error) => {
-            alert(error.message);
-        });
+      .then((userCredential) => {
+        const user = userCredential.user;
+        console.log('User logged in successfully!', user);
+        
+        // Show success alert
+        Alert.alert(
+          "Login Successful",
+          `Welcome back, ${user.email}!`,
+          [
+            { text: "OK", onPress: () => navigation.navigate('Home') }
+          ]
+        );
+      })
+      .catch((error) => {
+        // Show error alert
+        Alert.alert(
+          "Login Failed",
+          error.message,
+          [
+            { text: "OK" }
+          ]
+        );
+      });
   }
 
   return (
@@ -51,7 +66,6 @@ const LoginScreen = () => {
       </View>
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          // Add login functionality here
           onPress={handleLogin}
           style={styles.button}
         >
