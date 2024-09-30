@@ -3,8 +3,10 @@ import { KeyboardAvoidingView, StyleSheet, TextInput, TouchableOpacity, Text, Vi
 import DateTimePicker from '@react-native-community/datetimepicker';
 import DropDownPicker from 'react-native-dropdown-picker';
 import moment from 'moment'; 
-import { auth, createUserWithEmailAndPassword } from "../firebase";
+import { auth, createUserWithEmailAndPassword, firestore } from "../firebase";
 import { useNavigation } from '@react-navigation/core';
+import { doc, setDoc } from 'firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const RegisterScreen = () => {
     
@@ -45,10 +47,26 @@ const RegisterScreen = () => {
 
   const handleRegister = () => {
     createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredentials) => {
+      .then(async (userCredentials) => {
         // Signed in 
         const user = userCredentials.user;
         console.log('User registered successfully!', user);
+
+        await setDoc(doc(firestore, 'users', user.uid), {
+          email: user.email,
+          name: name,
+          biography: biography,
+          birthdate: moment(birthdate).format('MM/DD/YYYY'),
+          country: country,
+          gender: gender,
+          createdAt: new Date(),
+        });
+        console.log('User data saved in Firestore!');
+
+        await AsyncStorage.setItem('userName', name);
+        await AsyncStorage.setItem('userEmail', email);
+        console.log('User name and email saved in AsyncStorage!')
+
       })
       .catch((error) => {
         alert(error.message);

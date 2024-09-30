@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, StyleSheet, TextInput, TouchableOpacity, Text, View, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/core';
-import { auth, signInWithEmailAndPassword } from "../firebase";
+import { auth, signInWithEmailAndPassword, firestore } from "../firebase";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
@@ -14,6 +16,23 @@ const LoginScreen = () => {
         navigation.replace('Home');
       }
     });
+
+    const loadUserData = async() => {
+      try {
+        const savedName = await AsyncStorage.getItem('userName');
+        const savedEmail = await AsyncStorage.getItem('userEmail');
+
+        if(savedEmail) {
+          setEmail(savedEmail);
+        }
+      }
+      catch (error) {
+        console.error('Failed to load user data from AsyncStorage!', error);
+      }
+    };
+
+    loadUserData();
+
     return unsubscribe;
   }, []);
 
